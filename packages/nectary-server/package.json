@@ -4,8 +4,7 @@
   "author": "mingdev <mingdev@163.com>",
   "main": "lib/server.js",
   "devDependencies": {
-    "connect": "^3.7.0",
-    "memory-fs": "^0.5.0"
+    "connect": "^3.7.0"
   },
   "files": [
     "lib"

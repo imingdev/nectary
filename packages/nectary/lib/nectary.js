@@ -1,14 +1,16 @@
 const {merge} = require('lodash');
-const EventEmitter = require('events');
+const consola = require('consola');
+const Hookable = require('hable');
 const nectaryDefaultConfig = require('./nectary.config');
 
-class Nectary {
+class Nectary extends Hookable {
   constructor(options) {
+    super(consola);
+
     this.options = merge(nectaryDefaultConfig, options || {});
-    this.entryPoints = {};
-    this.event = new EventEmitter();
   }
-  ready(){
+
+  ready() {
 
   }
 }

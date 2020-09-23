@@ -7,7 +7,8 @@
     "lodash": "^4.17.20"
   },
   "devDependencies": {
-    "events": "^3.2.0"
+    "consola": "^2.15.0",
+    "hable": "^3.0.0"
   },
   "files": [
     "lib"
