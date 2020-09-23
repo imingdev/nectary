@@ -1,0 +1,19 @@
+{
+  "name": "nectary",
+  "version": "1.0.0",
+  "author": "mingdev <mingdev@163.com>",
+  "main": "lib/nectary.js",
+  "dependencies": {
+    "lodash": "^4.17.20"
+  },
+  "devDependencies": {
+    "events": "^3.2.0"
+  },
+  "files": [
+    "lib"
+  ],
+  "engines": {
+    "node": ">= 6.0.0",
+    "npm": ">= 3.0.0"
+  }
+}

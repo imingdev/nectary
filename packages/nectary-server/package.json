@@ -1,0 +1,17 @@
+{
+  "name": "nectary-server",
+  "version": "1.0.0",
+  "author": "mingdev <mingdev@163.com>",
+  "main": "lib/server.js",
+  "devDependencies": {
+    "connect": "^3.7.0",
+    "memory-fs": "^0.5.0"
+  },
+  "files": [
+    "lib"
+  ],
+  "engines": {
+    "node": ">= 6.0.0",
+    "npm": ">= 3.0.0"
+  }
+}
