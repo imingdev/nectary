@@ -9,7 +9,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const WebpackNodeExternals = require('webpack-node-externals');
 const {formatEntryName, formatFilePath} = require('../utils/format');
 const {resolve, resolveByProject} = require('../utils/resolve');
-const {styleLoaders, assetsLoaders} = require('./loaders');
+const {styleLoaders, assetsLoaders} = require('../utils/loaders');
 const {BUILD_SERVER_DIRECTORY, BUILD_PAGES_DIRECTORY, ASSETS_STATIC_DIRECTORY} = require('../utils/constants');
 
 // 检查文件是否存在,存在返回当前路径
@@ -54,11 +54,11 @@ module.exports = (options) => {
         let entryFile = file
 
         if (isClient) {
-          const clientLoader = resolve('webpack/loaders/client-pages-loader.js');
+          const clientLoader = resolve('loaders/client-pages-loader.js');
           entryName = fileName
           entryFile = `${clientLoader}?app=${AppComponentPath}&globalId=${options.globals.id}!${file}`
           if (options.dev) {
-            entryFile = ['webpack-hot-middleware/client', entryFile]
+            entryFile = [resolve('../node_modules/webpack-hot-middleware/client'), entryFile]
           }
         }
 
@@ -153,5 +153,6 @@ module.exports = (options) => {
       WebpackNodeExternals()
     ]
   }
+
   return resultConfig
 }
