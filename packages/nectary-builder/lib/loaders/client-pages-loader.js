@@ -18,7 +18,7 @@ module.exports = function () {
     import AppPage from '${currentComponentPath}';
 
     setTimeout(function () {
-      AppMain(AppPage, App, ${globalId});
+      AppMain(AppPage, App, '${globalId}');
     }, 0);
   `
 };
