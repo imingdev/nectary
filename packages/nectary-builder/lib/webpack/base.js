@@ -13,11 +13,15 @@ const {styleLoaders, assetsLoaders} = require('../utils/loaders');
 const {BUILD_SERVER_DIRECTORY, BUILD_PAGES_DIRECTORY, ASSETS_STATIC_DIRECTORY} = require('../utils/constants');
 
 // 检查文件是否存在,存在返回当前路径
-const checkFileExists = (file) => {
+const checkFileExists = (file, suffixList = ['js', 'jsx']) => {
   const fileList = Array.isArray(file) ? file : [file];
   for (let i = 0; i < fileList.length; i++) {
-    const currentFile = fileList[i];
-    if (fs.existsSync(currentFile)) return currentFile
+    const _file = fileList[i];
+    for (let j = 0; j < suffixList.length; j++) {
+      const _suffix = suffixList[j];
+      const currentFile = `${_file}.${_suffix}`;
+      if (fs.existsSync(currentFile)) return currentFile;
+    }
   }
   return false
 }
@@ -30,41 +34,38 @@ module.exports = (options) => {
   // get entry
   const entry = () => {
     const joinEntryGlobPath = dir => resolveByProject(options.srcDir, options.pageDir, dir);
-    const AppComponentPath = checkFileExists([
-        joinEntryGlobPath('_app.js'),
-        joinEntryGlobPath('_app.jsx')
-      ])
-      || resolve('client/pages/_app.jsx');
-    const patternList = [joinEntryGlobPath(options.build.pattern)];
-    if (!isClient) {
-      patternList.push(joinEntryGlobPath('_document.{js,jsx}'))
-    }
+    const DocumentComponentPath = checkFileExists(joinEntryGlobPath('_document')) || resolve('client/pages/_document.jsx');
+    const AppComponentPath = checkFileExists(joinEntryGlobPath('_app')) || resolve('client/pages/_app.jsx');
 
-    let entry = {}
-    patternList.forEach((globStr, index) => {
-      const globBase = GlobBase(globStr).base;
-      const globPageList = (Glob.sync(globStr) || []).map(file => ({base: globBase, file}))
-      if (index && !globPageList.length) {
-        // 没有自定义document组件
-        globPageList.push({base: resolve('client/pages'), file: resolve('client/pages/_document.jsx')})
-      }
-      globPageList.forEach(({base, file}) => {
-        const fileName = formatEntryName(path.relative(base, file).replace(path.extname(file), ''));
-        let entryName = `${BUILD_PAGES_DIRECTORY}/${fileName}`
-        let entryFile = file
+    let entry = {};
 
-        if (isClient) {
-          const clientLoader = resolve('loaders/client-pages-loader.js');
-          entryName = fileName
-          entryFile = `${clientLoader}?app=${AppComponentPath}&globalId=${options.globals.id}!${file}`
-          if (options.dev) {
-            entryFile = [resolve('../node_modules/webpack-hot-middleware/client'), entryFile]
-          }
+    const globStr = joinEntryGlobPath(options.build.pattern);
+    const globBase = GlobBase(globStr).base;
+    Glob.sync(globStr).forEach((globFile) => {
+      const fileName = formatEntryName(path.relative(globBase, globFile).replace(path.extname(globFile), ''));
+      let entryName = `${BUILD_PAGES_DIRECTORY}/${fileName}`
+      let entryFile = globFile
+
+      if (isClient) {
+        const clientLoader = resolve('loaders/client-pages-loader.js');
+        entryName = fileName
+        entryFile = `${clientLoader}?app=${AppComponentPath}&globalId=${options.globals.id}&globalContext=${options.globals.context}&mode=${mode}!${globFile}`
+        if (options.dev) {
+          entryFile = [
+            resolve('../node_modules/eventsource-polyfill'),
+            resolve(`../node_modules/webpack-hot-middleware/client?path=/__nectary__/hmr&name=${entryName}`),
+            entryFile
+          ]
         }
+      }
 
-        entry[entryName] = entryFile
-      })
+      entry[entryName] = entryFile
     });
+
+    if (!isClient) {
+      entry[`${BUILD_PAGES_DIRECTORY}/_document`] = DocumentComponentPath;
+      entry[`${BUILD_PAGES_DIRECTORY}/_app`] = AppComponentPath;
+    }
 
     return entry;
   }
@@ -95,7 +96,12 @@ module.exports = (options) => {
     return [{
       test: /\.(js|jsx)$/,
       loader: 'babel-loader',
-      include: [resolve('client'), process.cwd()]
+      include: [
+        resolve('client'),
+        resolve('loaders/client-pages-loader.js'),
+        resolve('../node_modules/webpack-hot-middleware/client'),
+        resolveByProject(options.srcDir)
+      ]
     }]
       .concat(styleLoaders({sourceMap: options.dev, useIgnore: !isClient, extract: isClient}))
       .concat(assetsLoaders({emitFile: isClient}));

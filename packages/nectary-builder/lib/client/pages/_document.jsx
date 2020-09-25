@@ -1,15 +1,15 @@
 import React from 'react';
 
 // script
-const HeadScript = ({scripts}) => (<>{scripts.map((js) => <script src={js} key={js}/>)}</>);
+const HeadScript = ({pageScripts}) => (<>{pageScripts.map((script) => <script src={script} key={script}/>)}</>);
 
 // style
-const HeadStyle = ({styles}) => (
+const HeadStyle = ({pageStyles}) => (
   <>
-    {styles.map((css) => (
+    {pageStyles.map((style) => (
       <link
-        href={css}
-        key={css}
+        href={style}
+        key={style}
         rel="stylesheet"
       />
     ))}
@@ -17,28 +17,28 @@ const HeadStyle = ({styles}) => (
 );
 
 // store
-const BodyStore = ({store, globalContent}) => {
+const BodyStore = ({store, globalContext}) => {
   if (!store) return null;
 
   return (
     <script
       // eslint-disable-next-line
-      dangerouslySetInnerHTML={{__html: `window.${globalContent}=${JSON.stringify(store)}`}}
+      dangerouslySetInnerHTML={{__html: `window.${globalContext}=${JSON.stringify(store)}`}}
     />
   );
 };
 
-export default ({App, Component, state, scripts, styles, globalId, globalContent}) => (
+export default ({App, Component, pageScripts, pageStyles, store, globalId, globalContext}) => (
   <html>
   <head>
-    <HeadScript scripts={scripts}/>
-    <HeadStyle styles={styles}/>
+    <HeadScript pageScripts={pageScripts}/>
+    <HeadStyle pageStyles={pageStyles}/>
   </head>
   <body>
   <div id={globalId}>
-    <App Component={Component} pageProps={state}/>
+    <App Component={Component} pageProps={store}/>
   </div>
-  <BodyStore store={state} globalContent={globalContent}/>
+  <BodyStore store={store} globalContext={globalContext}/>
   </body>
   </html>
 );

@@ -4,7 +4,8 @@
   "author": "mingdev <mingdev@163.com>",
   "main": "lib/server.js",
   "devDependencies": {
-    "connect": "^3.7.0"
+    "connect": "^3.7.0",
+    "connect-route": "^0.1.5"
   },
   "files": [
     "lib"

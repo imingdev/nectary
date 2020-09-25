@@ -4,6 +4,7 @@
   "author": "mingdev <mingdev@163.com>",
   "main": "lib/builder.js",
   "devDependencies": {
+    "eventsource-polyfill": "^0.9.6",
     "glob": "^7.1.6",
     "glob-base": "^0.3.0",
     "loader-utils": "^2.0.0",

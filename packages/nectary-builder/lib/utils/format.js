@@ -1,4 +1,5 @@
 const path = require('path');
+const {BUILD_PAGES_DIRECTORY} = require('./constants')
 
 // format file path
 exports.formatFilePath = (_path) => {
@@ -14,3 +15,9 @@ exports.formatFilePath = (_path) => {
 
 // format webpack entry name
 exports.formatEntryName = (_name) => exports.formatFilePath(_name).replace(new RegExp('/index$'), '');
+
+// format webpack entry name to url
+exports.formatEntryNameToUrl = entryName => ('/' + entryName
+  .replace(new RegExp(`(^${BUILD_PAGES_DIRECTORY}/)?`), '')
+  .replace(/_/g, ':')
+  .replace(/^index$/, ''));
