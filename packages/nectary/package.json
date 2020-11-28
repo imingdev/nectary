@@ -1,14 +1,14 @@
 {
   "name": "nectary",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "mingdev <mingdev@163.com>",
-  "main": "lib/nectary.js",
+  "main": "lib/index.js",
   "dependencies": {
-    "lodash": "^4.17.20"
-  },
-  "devDependencies": {
     "consola": "^2.15.0",
-    "hable": "^3.0.0"
+    "hable": "^3.0.0",
+    "lodash": "^4.17.20",
+    "nectary-builder": "^1.0.1",
+    "nectary-server": "^1.0.1"
   },
   "files": [
     "lib"
