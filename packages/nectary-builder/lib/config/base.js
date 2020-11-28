@@ -62,7 +62,6 @@ module.exports = class WebpackBaseConfig {
       include: [
         resolve('client'),
         resolve('loaders/client-pages-loader.js'),
-        resolve('../node_modules/webpack-hot-middleware/client'),
         resolveByProject(options.srcDir)
       ]
     }]

@@ -35,9 +35,9 @@ module.exports = class WebpackClientConfig extends WebpackBaseConfig {
 
           if (dev) entryVal.unshift(
             // https://github.com/webpack-contrib/webpack-hot-middleware/issues/53#issuecomment-162823945
-            resolve('../node_modules/eventsource-polyfill'),
+            'eventsource-polyfill',
             // https://github.com/glenjamin/webpack-hot-middleware#config
-            resolve('../node_modules/webpack-hot-middleware/client?path=/__nectary__/hmr')
+            'webpack-hot-middleware/client?path=/__nectary__/hmr'
           );
           return {[name]: entryVal};
         }))
