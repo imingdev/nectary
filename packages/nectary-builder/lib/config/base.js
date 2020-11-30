@@ -1,13 +1,20 @@
+const path = require('path');
 const WebpackDynamicEntryPlugin = require('webpack-dynamic-entry-plugin');
 const webpack = require('webpack');
+const cloneDeep = require('lodash/cloneDeep');
 const WebpackBarPlugin = require('webpackbar');
 const {styleLoaders, assetsLoaders} = require('../utils/loaders');
 const {resolve, resolveByProject} = require('../utils/resolve');
-const {checkFileExists} = require('../utils/checkFile');
 
 module.exports = class WebpackBaseConfig {
   constructor(options) {
     this.options = options;
+
+    this.assetsPath = this.assetsPath.bind(this);
+  }
+
+  assetsPath(_path) {
+    return path.posix.join(this.options.build.dir.static, _path);
   }
 
   get colors() {
@@ -33,6 +40,10 @@ module.exports = class WebpackBaseConfig {
     return this.dev ? 'development' : 'production';
   }
 
+  get target() {
+    return this.isServer ? 'node' : 'web';
+  }
+
   get devtool() {
     if (!this.dev) return false;
 
@@ -56,7 +67,11 @@ module.exports = class WebpackBaseConfig {
     };
 
     Object.entries(this.options.env).forEach(([key, value]) => {
-      env['process.env.' + key] = ['boolean', 'number'].includes(typeof value) ? value : JSON.stringify(value);
+      const envPrefix = 'process.env.';
+      const envKey = envPrefix + key.replace(new RegExp(`^${envPrefix}`), '');
+      const envVal = ['boolean', 'number'].includes(typeof value) ? value : JSON.stringify(value);
+
+      env[envKey] = envVal;
     });
 
     return env;
@@ -92,10 +107,10 @@ module.exports = class WebpackBaseConfig {
   }
 
   get rules() {
-    const {env, options} = this;
+    const {env, options, assetsPath} = this;
     const rules = [{
       test: /\.(js|jsx)$/,
-      loader: require.resolve('babel-loader'),
+      loader: 'react-hot-loader!babel-loader',
       include: [
         resolve('client'),
         resolve('loaders/client-pages-loader.js'),
@@ -108,7 +123,7 @@ module.exports = class WebpackBaseConfig {
         useIgnore: env.isServer,
         extract: env.isClient,
       }))
-      .concat(assetsLoaders({emitFile: env.isClient}));
+      .concat(assetsLoaders({emitFile: env.isClient, assetsPath}));
 
     if (options.eslint) rules.unshift({
       test: /\.(js|jsx)$/,
@@ -143,6 +158,7 @@ module.exports = class WebpackBaseConfig {
   config() {
     const config = {
       name: this.name,
+      target: this.target,
       mode: this.mode,
       devtool: this.devtool,
       entry: this.entry(),
@@ -168,7 +184,7 @@ module.exports = class WebpackBaseConfig {
       }
     };
 
-    const extendedConfig = this.extendConfig(config);
+    const extendedConfig = cloneDeep(this.extendConfig(config));
 
     return extendedConfig;
   }

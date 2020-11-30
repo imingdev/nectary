@@ -1,3 +1,4 @@
+const webpack = require('webpack');
 const WebpackDynamicEntryPlugin = require('webpack-dynamic-entry-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
@@ -5,7 +6,6 @@ const OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin');
 const ClientManifestPlugin = require('../plugins/client-manifest-plugin');
 const WebpackBaseConfig = require('./base');
 const {checkFileExists} = require('../utils/checkFile');
-const {assetsPath} = require('../utils/loaders');
 const {resolve, resolveByProject} = require('../utils/resolve');
 
 module.exports = class WebpackClientConfig extends WebpackBaseConfig {
@@ -45,7 +45,7 @@ module.exports = class WebpackClientConfig extends WebpackBaseConfig {
   }
 
   output() {
-    const {dev} = this;
+    const {dev, assetsPath} = this;
     const output = super.output();
     return {
       ...output,
@@ -66,7 +66,7 @@ module.exports = class WebpackClientConfig extends WebpackBaseConfig {
   }
 
   plugins() {
-    const {dev, options} = this;
+    const {dev, options, assetsPath} = this;
     const {publicPath, manifest} = options.build;
 
     const plugins = super.plugins();
@@ -80,6 +80,10 @@ module.exports = class WebpackClientConfig extends WebpackBaseConfig {
         fileName: manifest
       })
     );
+
+    if (dev) {
+      plugins.push(new webpack.HotModuleReplacementPlugin());
+    }
 
     return plugins;
   }

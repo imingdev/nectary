@@ -6,9 +6,5 @@ export default (App, Component, context, id) => {
   const mainEl = document.getElementById(id);
   const AppComponent = <App Component={Component} pageProps={state}/>;
 
-  if (state) {
-    ReactDom.hydrate(AppComponent, mainEl);
-  } else {
-    ReactDom.render(AppComponent, mainEl);
-  }
+  ReactDom.hydrate(AppComponent, mainEl);
 };

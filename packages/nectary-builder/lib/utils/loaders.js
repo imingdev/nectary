@@ -3,8 +3,6 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 const resolve = (dir) => path.join(__dirname, '..', dir);
 
-exports.assetsPath = (_path) => path.posix.join('static', _path);
-
 exports.cssLoaders = (options = {}) => {
   const cssLoader = {
     loader: 'css-loader',
@@ -64,7 +62,7 @@ exports.styleLoaders = (options = {}) => {
   return output;
 };
 
-exports.assetsLoaders = ({emitFile = true} = {}) => {
+exports.assetsLoaders = ({emitFile = true, assetsPath} = {}) => {
   const loader = 'url-loader';
   const limit = 1000;
 
@@ -74,7 +72,7 @@ exports.assetsLoaders = ({emitFile = true} = {}) => {
     options: {
       limit,
       emitFile,
-      name: exports.assetsPath('images/[hash:8].[ext]')
+      name: assetsPath('images/[hash:8].[ext]')
     }
   }, {
     test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/,
@@ -82,7 +80,7 @@ exports.assetsLoaders = ({emitFile = true} = {}) => {
     options: {
       limit,
       emitFile,
-      name: exports.assetsPath('images/[hash:8].[ext]')
+      name: assetsPath('images/[hash:8].[ext]')
     }
   }, {
     test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
@@ -90,7 +88,7 @@ exports.assetsLoaders = ({emitFile = true} = {}) => {
     options: {
       limit,
       emitFile,
-      name: exports.assetsPath('fonts/[hash:8].[ext]')
+      name: assetsPath('fonts/[hash:8].[ext]')
     }
   }];
 };

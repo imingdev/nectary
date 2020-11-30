@@ -2,6 +2,11 @@ import React from 'react';
 import devalue from 'devalue';
 
 const RenderJudge = ({value, active, inactive}) => (value ? active : inactive);
+RenderJudge.defaultProps = {
+  value: true,
+  active: null,
+  inactive: null
+};
 
 // script
 const Script = ({data}) => (

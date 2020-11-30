@@ -29,7 +29,7 @@ module.exports = class WebpackServerConfig extends WebpackBaseConfig {
       ],
       generate: (entry) => Object.assign.apply(Object, Object.keys(entry)
         .map((name) => {
-          const key = `${build.serverDir}/${name}`
+          const key = `${build.dir.server}/${name}`
             .split('/')
             .filter(Boolean)
             .join('/');

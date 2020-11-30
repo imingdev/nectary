@@ -26,7 +26,10 @@ module.exports = class Builder {
 
     if (options.dev) {
       // Client Build, watch is started by dev-middleware
-      if (name === 'client') return this.webpackDev(compiler);
+      if (name === 'client') return new Promise((resolve) => {
+        compiler.hooks.done.tap('nectary-dev', () => resolve());
+        return this.webpackDev(compiler);
+      });
 
       // Server, build and watch for changes
       if (name === 'server') return new Promise((resolve, reject) => {
