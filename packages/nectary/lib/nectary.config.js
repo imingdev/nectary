@@ -3,13 +3,19 @@ const NODE_ENV = process.env.NODE_ENV || 'development';
 module.exports = {
   dev: NODE_ENV === 'development',
   build: {
-    manifestFileName: 'manifest.json',
+    manifest: 'manifest.json',
     serverDir: 'views',
     publicPath: '/',
-    extend(config, {isDev, isClient}) {
-
+    extend(config, {isDev, isClient, isServer}) {
+      return config;
+    },
+    babel: {
+      configFile: false,
+      babelrc: false,
+      cacheDirectory: undefined
     }
   },
+  eslint: true,
   alias: {},
   buildDir: 'dist',
   srcDir: 'src',

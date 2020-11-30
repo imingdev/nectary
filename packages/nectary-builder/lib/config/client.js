@@ -54,9 +54,20 @@ module.exports = class WebpackClientConfig extends WebpackBaseConfig {
     }
   }
 
+  nodeEnv() {
+    return Object.assign(
+      super.nodeEnv(),
+      {
+        'process.browser': true,
+        'process.client': true,
+        'process.server': false
+      }
+    );
+  }
+
   plugins() {
     const {dev, options} = this;
-    const {publicPath, manifestFileName} = options.build;
+    const {publicPath, manifest} = options.build;
 
     const plugins = super.plugins();
     plugins.push(
@@ -66,7 +77,7 @@ module.exports = class WebpackClientConfig extends WebpackBaseConfig {
       }),
       new ClientManifestPlugin({
         publicPath,
-        fileName: manifestFileName
+        fileName: manifest
       })
     );
 

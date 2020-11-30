@@ -48,6 +48,17 @@ module.exports = class WebpackServerConfig extends WebpackBaseConfig {
     }
   }
 
+  nodeEnv() {
+    return Object.assign(
+      super.nodeEnv(),
+      {
+        'process.browser': false,
+        'process.client': false,
+        'process.server': true
+      }
+    );
+  }
+
   config() {
     const config = super.config();
     return {
