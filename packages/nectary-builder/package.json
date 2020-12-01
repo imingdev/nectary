@@ -1,6 +1,6 @@
 {
   "name": "nectary-builder",
-  "version": "1.0.7",
+  "version": "1.0.9",
   "author": "mingdev <mingdev@163.com>",
   "main": "lib/builder.js",
   "dependencies": {
@@ -23,7 +23,6 @@
     "optimize-css-assets-webpack-plugin": "^5.0.4",
     "pify": "^5.0.0",
     "postcss-loader": "^4.1.0",
-    "react-hot-loader": "^4.13.0",
     "uglifyjs-webpack-plugin": "^2.2.0",
     "url-loader": "^4.1.1",
     "webpack": "^4.44.2",

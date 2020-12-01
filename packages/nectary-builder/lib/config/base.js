@@ -110,7 +110,7 @@ module.exports = class WebpackBaseConfig {
     const {env, options, assetsPath} = this;
     const rules = [{
       test: /\.(js|jsx)$/,
-      loader: 'react-hot-loader!babel-loader',
+      loader: require.resolve('babel-loader'),
       include: [
         resolve('client'),
         resolve('loaders/client-pages-loader.js'),

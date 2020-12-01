@@ -12,6 +12,7 @@ module.exports = class Builder {
     this.webpackConfig = getWebpackConfig(nectary.options);
 
     this.webpackCompile = this.webpackCompile.bind(this);
+    this.devMiddleware = this.devMiddleware.bind(this);
   }
 
   async ready() {
@@ -52,7 +53,7 @@ module.exports = class Builder {
   }
 
   async webpackDev(compiler) {
-    const {nectary, options, devMiddleware} = this
+    const {nectary, devMiddleware} = this
     // Create webpack dev middleware
     this.devMiddleware = pify(
       webpackDevMiddleware(compiler, {
