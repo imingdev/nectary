@@ -1,6 +1,6 @@
-const WebpackManifestPlugin = require('webpack-manifest-plugin');
+import WebpackManifestPlugin from 'webpack-manifest-plugin';
 
-module.exports = class ClientManifestPlugin extends WebpackManifestPlugin {
+export default class ClientManifestPlugin extends WebpackManifestPlugin {
   constructor(options = {}) {
     super({
       ...options,
@@ -10,7 +10,9 @@ module.exports = class ClientManifestPlugin extends WebpackManifestPlugin {
         .map((name) => {
           const files = entryPoints[name].map((file) => `${options.publicPath}${file}`);
 
-          const scripts = files.filter((row) => /\.js$/.test(row));
+          const scripts = files.filter((row) => /\.js$/.test(row))
+            .filter(row => !/hot-update.js$/.test(row));
+
           const styles = files.filter((row) => /\.css$/.test(row));
 
           return {

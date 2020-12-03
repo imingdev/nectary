@@ -1,20 +1,38 @@
-const path = require('path');
-const WebpackDynamicEntryPlugin = require('webpack-dynamic-entry-plugin');
-const webpack = require('webpack');
-const cloneDeep = require('lodash/cloneDeep');
-const WebpackBarPlugin = require('webpackbar');
-const {styleLoaders, assetsLoaders} = require('../utils/loaders');
-const {resolve, resolveByProject} = require('../utils/resolve');
+import path from 'path';
+import WebpackDynamicEntryPlugin from 'webpack-dynamic-entry-plugin';
+import webpack from 'webpack';
+import cloneDeep from 'lodash/cloneDeep';
+import WebpackBarPlugin from 'webpackbar';
+import {styleLoaders, assetsLoaders} from '../utils/loaders';
+import {checkFileExists} from "../utils/checkFile";
 
-module.exports = class WebpackBaseConfig {
+export default class WebpackBaseConfig {
   constructor(options) {
     this.options = options;
 
     this.assetsPath = this.assetsPath.bind(this);
+    this.loadPagePath = this.loadPagePath.bind(this);
   }
 
   assetsPath(_path) {
     return path.posix.join(this.options.build.dir.static, _path);
+  }
+
+  loadPagePath(p) {
+    const {rootDir = process.cwd(), srcDir, pageDir} = this.options;
+    return path.join(rootDir, srcDir, pageDir, p);
+  }
+
+  get loadDefaultPages() {
+    const {loadPagePath} = this;
+
+    const load = name => checkFileExists(loadPagePath(name)) || require.resolve(`../client/pages/${name}`);
+
+    return {
+      '_document': load('_document'),
+      '_app': load('_app'),
+      '_404': load('_404')
+    }
   }
 
   get colors() {
@@ -45,16 +63,17 @@ module.exports = class WebpackBaseConfig {
   }
 
   get devtool() {
-    if (!this.dev) return false;
+    const {dev, isServer} = this;
+    if (!dev || isServer) return false;
 
     return 'source-map';
   }
 
   output() {
     const {options} = this;
-    const {buildDir, build} = options;
+    const {rootDir, buildDir, build} = options;
     return {
-      path: resolveByProject(buildDir),
+      path: path.join(rootDir, buildDir),
       publicPath: build.publicPath
     }
   }
@@ -89,16 +108,16 @@ module.exports = class WebpackBaseConfig {
     if (opt.configFile || opt.babelrc) return opt;
 
     const defaultPlugins = [
-      require.resolve('@babel/plugin-transform-runtime'),
-      require.resolve('@babel/plugin-syntax-dynamic-import'),
-      require.resolve('@babel/plugin-proposal-class-properties')
+      '@babel/plugin-transform-runtime',
+      '@babel/plugin-syntax-dynamic-import',
+      '@babel/plugin-proposal-class-properties'
     ];
     if (typeof opt.plugins === 'function') opt.plugins = opt.plugins({envName, ...env}, defaultPlugins);
     if (!opt.plugins) opt.plugins = defaultPlugins;
 
     const defaultPreset = [
-      [require.resolve('@babel/preset-env'), {modules: false}],
-      require.resolve('@babel/preset-react')
+      ['@babel/preset-env', {modules: false}],
+      '@babel/preset-react'
     ];
     if (typeof opt.presets === 'function') opt.presets = opt.presets({envName, ...env}, defaultPreset);
     if (!opt.presets) opt.presets = defaultPreset;
@@ -110,11 +129,11 @@ module.exports = class WebpackBaseConfig {
     const {env, options, assetsPath} = this;
     const rules = [{
       test: /\.(js|jsx)$/,
-      loader: require.resolve('babel-loader'),
+      loader: 'babel-loader',
       include: [
-        resolve('client'),
-        resolve('loaders/client-pages-loader.js'),
-        resolveByProject(options.srcDir)
+        path.join(__dirname, '..', 'client'),
+        path.join(__dirname, '..', 'loaders'),
+        path.join(options.rootDir, options.srcDir)
       ],
       options: this.getBabelOptions()
     }]

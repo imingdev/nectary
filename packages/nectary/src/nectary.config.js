@@ -1,6 +1,6 @@
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
-module.exports = {
+export default {
   dev: NODE_ENV === 'development',
   env: {},
   build: {
@@ -12,6 +12,7 @@ module.exports = {
     babel: {
       configFile: false,
       babelrc: false,
+      compact: false,
       cacheDirectory: undefined
     },
     dir: {
@@ -19,12 +20,10 @@ module.exports = {
       static: 'static'
     }
   },
-  compressor: {
-    threshold: 0
-  },
   eslint: true,
   alias: {},
   buildDir: 'dist',
+  rootDir: process.cwd(),
   srcDir: 'src',
   pageDir: 'pages',
   pattern: '**/index.{js,jsx}',
@@ -32,4 +31,4 @@ module.exports = {
     id: 'app-main',
     context: '__INITIAL_STATE__'
   }
-};
+}

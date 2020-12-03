@@ -1,14 +1,13 @@
-const webpack = require('webpack');
-const WebpackDynamicEntryPlugin = require('webpack-dynamic-entry-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
-const OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin');
-const ClientManifestPlugin = require('../plugins/client-manifest-plugin');
-const WebpackBaseConfig = require('./base');
-const {checkFileExists} = require('../utils/checkFile');
-const {resolve, resolveByProject} = require('../utils/resolve');
+import path from 'path';
+import webpack from 'webpack';
+import WebpackDynamicEntryPlugin from 'webpack-dynamic-entry-plugin';
+import MiniCssExtractPlugin from 'mini-css-extract-plugin';
+import UglifyJsPlugin from 'uglifyjs-webpack-plugin';
+import OptimizeCSSPlugin from 'optimize-css-assets-webpack-plugin';
+import ClientManifestPlugin from '../plugins/client-manifest-plugin';
+import WebpackBaseConfig from './base';
 
-module.exports = class WebpackClientConfig extends WebpackBaseConfig {
+export default class WebpackClientConfig extends WebpackBaseConfig {
   constructor(options) {
     super(options);
     this.name = 'client';
@@ -17,30 +16,30 @@ module.exports = class WebpackClientConfig extends WebpackBaseConfig {
   }
 
   entry() {
-    const {options, dev} = this;
-    const {srcDir, pageDir, pattern, globals} = options;
+    const {options, dev, loadPagePath, loadDefaultPages} = this;
+    const {pattern, globals} = options;
 
-    const appPath = checkFileExists(resolveByProject(srcDir, pageDir, '_app')) || resolve('client/pages/_app.jsx');
-    const notPagePath = checkFileExists(resolveByProject(srcDir, pageDir, '_404')) || resolve('client/pages/_404.jsx');
+    const appPath = loadDefaultPages._app;
 
     return WebpackDynamicEntryPlugin.getEntry({
-      pattern: [
-        resolveByProject(srcDir, pageDir, pattern),
-        notPagePath
-      ],
-      generate: (entry) => Object.assign.apply(Object, Object.keys(entry)
-        .map((name) => {
-          const loaderPath = resolve('loaders/client-pages-loader.js');
-          const entryVal = [`${loaderPath}?app=${appPath}&id=${globals.id}&context=${globals.context}!${entry[name]}`];
+      pattern: loadPagePath(pattern),
+      generate: (entry) => {
+        if (!entry['_404']) entry['_404'] = loadDefaultPages._404;
 
-          if (dev) entryVal.unshift(
-            // https://github.com/webpack-contrib/webpack-hot-middleware/issues/53#issuecomment-162823945
-            'eventsource-polyfill',
-            // https://github.com/glenjamin/webpack-hot-middleware#config
-            'webpack-hot-middleware/client?path=/__nectary__/hmr'
-          );
-          return {[name]: entryVal};
-        }))
+        return Object.assign.apply(Object, Object.keys(entry)
+          .map((name) => {
+            const loaderPath = require.resolve('../loaders/client-pages-loader.js');
+            const entryVal = [`${loaderPath}?app=${appPath}&id=${globals.id}&context=${globals.context}!${entry[name]}`];
+
+            if (dev) entryVal.unshift(
+              // https://github.com/webpack-contrib/webpack-hot-middleware/issues/53#issuecomment-162823945
+              'eventsource-polyfill',
+              // https://github.com/glenjamin/webpack-hot-middleware#config
+              'webpack-hot-middleware/client?path=/__nectary__/hmr'
+            );
+            return {[name]: entryVal};
+          }))
+      }
     });
   }
 
@@ -81,15 +80,13 @@ module.exports = class WebpackClientConfig extends WebpackBaseConfig {
       })
     );
 
-    if (dev) {
-      plugins.push(new webpack.HotModuleReplacementPlugin());
-    }
+    if (dev) plugins.push(new webpack.HotModuleReplacementPlugin());
 
     return plugins;
   }
 
   optimization() {
-    const {dev} = this;
+    const {dev, options} = this;
     if (dev) return {};
 
     return {
@@ -98,7 +95,7 @@ module.exports = class WebpackClientConfig extends WebpackBaseConfig {
           vendor: {
             name: 'vendor',
             chunks: 'initial',
-            test: ({resource}) => resource && /\.js$/.test(resource) && resource.indexOf(resolveByProject('node_modules')) === 0
+            test: ({resource}) => resource && /\.js$/.test(resource) && path.join(options.rootDir, 'node_modules') === 0
           },
           async: {
             name: 'async',

@@ -1,11 +1,11 @@
-const pify = require('pify');
-const webpack = require('webpack');
-const webpackDevMiddleware = require('webpack-dev-middleware');
-const webpackHotMiddleware = require('webpack-hot-middleware');
-const getWebpackConfig = require('./config');
-const {resolveByProject} = require('./utils/resolve');
+import path from 'path';
+import pify from 'pify';
+import webpack from 'webpack';
+import webpackDevMiddleware from 'webpack-dev-middleware';
+import webpackHotMiddleware from 'webpack-hot-middleware';
+import getWebpackConfig from './config';
 
-module.exports = class Builder {
+export default class WebpackBundle {
   constructor(nectary) {
     this.nectary = nectary;
     this.options = nectary.options;
@@ -15,14 +15,15 @@ module.exports = class Builder {
     this.devMiddleware = this.devMiddleware.bind(this);
   }
 
-  async ready() {
+  async build() {
     const {client, server} = this.webpackConfig;
 
-    await Promise.all([client, server].map(config => this.webpackCompile(webpack(config))));
+    await Promise.all([client, server].map(c => this.webpackCompile(webpack(c))));
   }
 
   async webpackCompile(compiler) {
     const {options} = this;
+    const {rootDir, srcDir} = options;
     const {name} = compiler.options;
 
     if (options.dev) {
@@ -34,7 +35,7 @@ module.exports = class Builder {
 
       // Server, build and watch for changes
       if (name === 'server') return new Promise((resolve, reject) => {
-        compiler.watch(resolveByProject(options.srcDir), (err) => {
+        compiler.watch(path.join(rootDir, srcDir), (err) => {
           if (err) return reject(err);
 
           resolve();
@@ -46,14 +47,14 @@ module.exports = class Builder {
     const stats = await compiler.run();
 
     if (stats.hasErrors()) {
-      const error = new Error('Nectary build error');
+      const error = new Error('nectary build error');
       error.stack = stats.toString('errors-only');
       throw error
     }
   }
 
   async webpackDev(compiler) {
-    const {nectary, devMiddleware} = this
+    const {devMiddleware} = this;
     // Create webpack dev middleware
     this.devMiddleware = pify(
       webpackDevMiddleware(compiler, {
@@ -65,12 +66,13 @@ module.exports = class Builder {
     this.hotMiddleware = pify(
       webpackHotMiddleware(compiler, {
         log: false,
+        heartbeat: 10000,
         path: '/__nectary__/hmr'
       })
     );
 
-    // Register devMiddleware on server
-    await nectary.callHook('server:devMiddleware', devMiddleware.bind(this));
+    // Register devMiddleware
+    await this.nectary.callHook('server:devMiddleware', devMiddleware.bind(this));
   }
 
   // dev middle

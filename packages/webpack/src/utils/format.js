@@ -1,7 +1,7 @@
-const {sep} = require('path');
+import {sep} from 'path';
 
 // format file path
-exports.formatFilePath = (_path) => {
+export const formatFilePath = (_path) => {
   if (_path.includes(sep)) {
     return _path.split(sep)
       .join('/');
@@ -11,5 +11,5 @@ exports.formatFilePath = (_path) => {
 };
 
 // format webpack entry name
-exports.formatEntryName = (_name) => exports.formatFilePath(_name)
+export const formatEntryName = (_name) => formatFilePath(_name)
   .replace(new RegExp('/index$'), '');

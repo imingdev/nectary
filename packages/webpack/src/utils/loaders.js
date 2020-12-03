@@ -1,9 +1,9 @@
-const path = require('path');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+import path from 'path';
+import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 
 const resolve = (dir) => path.join(__dirname, '..', dir);
 
-exports.cssLoaders = (options = {}) => {
+export const cssLoaders = (options = {}) => {
   const cssLoader = {
     loader: 'css-loader',
     options: {
@@ -47,9 +47,9 @@ exports.cssLoaders = (options = {}) => {
   };
 };
 
-exports.styleLoaders = (options = {}) => {
+export const styleLoaders = (options = {}) => {
   const output = [];
-  const loaders = exports.cssLoaders(options);
+  const loaders = cssLoaders(options);
 
   for (const extension in loaders) {
     const loader = loaders[extension];
@@ -62,7 +62,7 @@ exports.styleLoaders = (options = {}) => {
   return output;
 };
 
-exports.assetsLoaders = ({emitFile = true, assetsPath} = {}) => {
+export const assetsLoaders = ({emitFile = true, assetsPath} = {}) => {
   const loader = 'url-loader';
   const limit = 1000;
 
