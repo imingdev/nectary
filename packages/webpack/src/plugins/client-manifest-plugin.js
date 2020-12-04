@@ -4,7 +4,6 @@ export default class ClientManifestPlugin extends WebpackManifestPlugin {
   constructor(options = {}) {
     super({
       ...options,
-      writeToFileEmit: true,
       fileName: options.fileName,
       generate: (seed, files, entryPoints) => Object.assign.apply(Object, Object.keys(entryPoints)
         .map((name) => {

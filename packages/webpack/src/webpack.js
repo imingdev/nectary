@@ -4,12 +4,16 @@ import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
 import webpackHotMiddleware from 'webpack-hot-middleware';
 import getWebpackConfig from './config';
+import MFS from 'memory-fs';
 
 export default class WebpackBundle {
   constructor(nectary) {
     this.nectary = nectary;
     this.options = nectary.options;
     this.webpackConfig = getWebpackConfig(nectary.options);
+
+    // Initialize shared MFS for dev
+    if (this.options.dev) this.mfs = new MFS();
 
     this.webpackCompile = this.webpackCompile.bind(this);
     this.devMiddleware = this.devMiddleware.bind(this);
@@ -22,16 +26,24 @@ export default class WebpackBundle {
   }
 
   async webpackCompile(compiler) {
-    const {options} = this;
+    const {options, nectary, mfs} = this;
     const {rootDir, srcDir} = options;
     const {name} = compiler.options;
 
     if (options.dev) {
       // Client Build, watch is started by dev-middleware
-      if (name === 'client') return new Promise((resolve) => {
-        compiler.hooks.done.tap('nectary-dev', () => resolve());
-        return this.webpackDev(compiler);
-      });
+      if (name === 'client') {
+        // In dev, write files in memory FS
+        compiler.outputFileSystem = this.mfs;
+
+        return new Promise((resolve) => {
+          compiler.hooks.done.tap('nectary-dev', async () => {
+            await nectary.callHook('server:resources', mfs);
+            resolve();
+          });
+          return this.webpackDev(compiler);
+        });
+      }
 
       // Server, build and watch for changes
       if (name === 'server') return new Promise((resolve, reject) => {
@@ -59,7 +71,8 @@ export default class WebpackBundle {
     this.devMiddleware = pify(
       webpackDevMiddleware(compiler, {
         stats: false,
-        logLevel: 'silent'
+        logLevel: 'silent',
+        fs: compiler.outputFileSystem
       })
     );
     // Create webpack hot middleware
