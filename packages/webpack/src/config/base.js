@@ -10,12 +10,34 @@ export default class WebpackBaseConfig {
   constructor(options) {
     this.options = options;
 
-    this.assetsPath = this.assetsPath.bind(this);
     this.loadPagePath = this.loadPagePath.bind(this);
   }
 
-  assetsPath(_path) {
-    return path.posix.join(this.options.build.dir.static, _path);
+  get assetsPath() {
+    const {env, options: {dev, build: {dir, filenames}}} = this;
+    const {app, chunk, css, img, font, video} = filenames || {};
+
+    const resolvePath = _path => path.posix.join(dir.static, _path);
+
+    const loadFileNamePath = name => {
+      let fileName;
+      if (typeof name === 'string') fileName = resolvePath(name);
+      if (typeof name === 'function') fileName = resolvePath(name(env));
+      if (fileName && dev) {
+        const hash = /\[(chunkhash|contenthash|hash)(?::(\d+))?]/.exec(fileName);
+        if (hash) console.warn(`Notice: Please do not use ${hash[1]} in dev mode to prevent memory leak`);
+      }
+      return fileName;
+    };
+
+    return {
+      app: loadFileNamePath(app) || (dev ? '[name].js' : resolvePath('js/[contenthash:8].js')),
+      chunk: loadFileNamePath(chunk) || (dev ? '[name].js' : resolvePath('js/[contenthash:8].js')),
+      css: loadFileNamePath(css) || (dev ? '[name].css' : resolvePath('css/[contenthash:8].css')),
+      img: loadFileNamePath(img) || (dev ? '[path][name].[ext]' : resolvePath('images/[contenthash:8].[ext]')),
+      font: loadFileNamePath(font) || (dev ? '[path][name].[ext]' : resolvePath('fonts/[contenthash:8].[ext]')),
+      video: loadFileNamePath(video) || (dev ? '[path][name].[ext]' : resolvePath('videos/[contenthash:8].[ext]'))
+    }
   }
 
   loadPagePath(p) {
@@ -31,7 +53,7 @@ export default class WebpackBaseConfig {
     return {
       '_document': load('_document'),
       '_app': load('_app'),
-      '_404': load('_404')
+      '_error': load('_error')
     }
   }
 

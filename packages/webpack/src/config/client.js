@@ -24,7 +24,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     return WebpackDynamicEntryPlugin.getEntry({
       pattern: loadPagePath(pattern),
       generate: (entry) => {
-        if (!entry['_404']) entry['_404'] = loadDefaultPages._404;
+        if (!entry['_error']) entry['_error'] = loadDefaultPages._error;
 
         return Object.assign.apply(Object, Object.keys(entry)
           .map((name) => {
@@ -44,12 +44,12 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
   }
 
   output() {
-    const {dev, assetsPath} = this;
+    const {assetsPath} = this;
     const output = super.output();
     return {
       ...output,
-      filename: dev ? '[name].js' : assetsPath('js/[chunkhash:8].js'),
-      chunkFilename: dev ? '[name].js' : assetsPath('js/[chunkhash:8].js')
+      filename: assetsPath.app,
+      chunkFilename: assetsPath.chunk
     }
   }
 
@@ -71,8 +71,8 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     const plugins = super.plugins();
     plugins.push(
       new MiniCssExtractPlugin({
-        filename: dev ? '[name].css' : assetsPath('css/[contenthash:8].css'),
-        chunkFilename: dev ? '[name].css' : assetsPath('css/[contenthash:8].css')
+        filename: assetsPath.css,
+        chunkFilename: assetsPath.css
       }),
       new ClientManifestPlugin({
         publicPath,

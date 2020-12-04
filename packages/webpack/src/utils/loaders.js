@@ -67,28 +67,28 @@ export const assetsLoaders = ({emitFile = true, assetsPath} = {}) => {
   const limit = 1000;
 
   return [{
-    test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
+    test: /\.(png|jpe?g|gif|svg|webp|avif)$/i,
     loader,
     options: {
       limit,
       emitFile,
-      name: assetsPath('images/[hash:8].[ext]')
+      name: assetsPath.img
     }
   }, {
-    test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/,
+    test: /\.(webm|mp4|ogv)$/i,
     loader,
     options: {
       limit,
       emitFile,
-      name: assetsPath('images/[hash:8].[ext]')
+      name: assetsPath.video
     }
   }, {
-    test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
+    test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/i,
     loader,
     options: {
       limit,
       emitFile,
-      name: assetsPath('fonts/[hash:8].[ext]')
+      name: assetsPath.font
     }
   }];
 };

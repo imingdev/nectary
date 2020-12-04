@@ -19,7 +19,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
       generate: (entry) => {
         if (!entry['_document']) entry['_document'] = loadDefaultPages._document;
         if (!entry['_app']) entry['_app'] = loadDefaultPages._app;
-        if (!entry['_404']) entry['_404'] = loadDefaultPages._404;
+        if (!entry['_error']) entry['_error'] = loadDefaultPages._error;
 
         return Object.assign.apply(Object, Object.keys(entry)
           .map((name) => {
