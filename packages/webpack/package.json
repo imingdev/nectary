@@ -1,6 +1,6 @@
 {
   "name": "@nectary/webpack",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "author": "mingdev <mingdev@163.com>",
   "main": "dist/webpack.js",
   "scripts": {

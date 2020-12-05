@@ -4,6 +4,7 @@ import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
 import webpackHotMiddleware from 'webpack-hot-middleware';
 import getWebpackConfig from './config';
+import fs from 'fs';
 import MFS from 'memory-fs';
 
 export default class WebpackBundle {
@@ -30,17 +31,26 @@ export default class WebpackBundle {
     const {rootDir, srcDir} = options;
     const {name} = compiler.options;
 
+    // Load renderer resources after build
+    compiler.hooks.done.tap('load-resources', async (stats) => {
+      await nectary.callHook('server:compiled', {
+        name,
+        compiler,
+        stats
+      });
+
+      // Reload renderer
+      if (name === 'client') await nectary.callHook('server:resources', options.dev ? mfs : fs);
+    })
+
     if (options.dev) {
       // Client Build, watch is started by dev-middleware
       if (name === 'client') {
         // In dev, write files in memory FS
-        compiler.outputFileSystem = this.mfs;
+        compiler.outputFileSystem = mfs;
 
         return new Promise((resolve) => {
-          compiler.hooks.done.tap('nectary-dev', async () => {
-            await nectary.callHook('server:resources', mfs);
-            resolve();
-          });
+          compiler.hooks.done.tap('nectary-dev', () => resolve());
           return this.webpackDev(compiler);
         });
       }

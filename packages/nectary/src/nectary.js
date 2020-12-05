@@ -1,6 +1,7 @@
 import merge from 'lodash/merge';
 import consola from 'consola';
 import Hookable from 'hable';
+import Server from '@nectary/server';
 
 import defaultConfig from './nectary.config';
 
@@ -9,5 +10,30 @@ export default class Nectary extends Hookable {
     super(consola);
 
     this.options = merge(defaultConfig, options || {});
+
+    // Init server
+    if (this.options.server !== false) {
+      this._initServer();
+    }
+  }
+
+  async ready() {
+    if (this._ready) return this;
+    this._ready = true;
+
+    // Await for server to be ready
+    if (this.server) {
+      await this.server.ready();
+    }
+
+    return this;
+  }
+
+  _initServer() {
+    if (this.server) return;
+
+    this.server = new Server(this);
+    this.renderer = this.server;
+    this.render = this.server.app;
   }
 };
