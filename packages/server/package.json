@@ -3,25 +3,12 @@
   "version": "1.0.1",
   "author": "mingdev <mingdev@163.com>",
   "main": "dist/server.js",
-  "scripts": {
-    "prepublish": "npm run build",
-    "build": "npm run clean && npm run babel",
-    "babel": "cross-env NODE_ENV=production babel src -d dist --copy-files",
-    "clean": "rimraf dist"
-  },
   "dependencies": {
     "compression": "^1.7.4",
     "connect": "^3.7.0",
     "path-to-regexp": "^6.2.0",
     "react-helmet": "^6.1.0",
     "serve-static": "^1.14.1"
-  },
-  "devDependencies": {
-    "@babel/cli": "^7.12.8",
-    "@babel/core": "^7.12.9",
-    "@babel/preset-env": "^7.12.7",
-    "cross-env": "^7.0.3",
-    "rimraf": "^3.0.2"
   },
   "files": [
     "dist"
