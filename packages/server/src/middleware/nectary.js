@@ -23,36 +23,41 @@ const getResourcesName = (res, url) => Object.keys(res)
   });
 
 export default ({serverContext, render}) => async (req, res, next) => {
-  const {options} = serverContext;
-  const {etag} = options.server || {};
+  try {
+    const {options} = serverContext;
+    const {etag} = options.server || {};
 
-  const resources = serverContext.resources;
-  let view = getResourcesName(resources, req.url);
-  if (!view) view = '_error';
+    const resources = serverContext.resources;
+    let view = getResourcesName(resources, req.url);
+    if (!view) view = '_error';
 
-  const {scripts, styles} = resources[view];
-  const html = await render({view, scripts, styles, req, res});
+    const {scripts, styles} = resources[view];
+    const html = await render({view, scripts, styles, req, res});
 
-  // Add ETag header
-  if (etag) {
-    const {hash} = etag;
-    const etagVal = hash ? hash(html, etag) : generateETag(html, etag);
-    if (fresh(req.headers, {etag: etagVal})) {
-      res.statusCode = 304;
-      res.end();
-      return next();
+    // Add ETag header
+    if (etag) {
+      const {hash} = etag;
+      const etagVal = hash ? hash(html, etag) : generateETag(html, etag);
+      if (fresh(req.headers, {etag: etagVal})) {
+        res.statusCode = 304;
+        res.end();
+        return next();
+      }
+      res.setHeader('ETag', etagVal);
     }
-    res.setHeader('ETag', etagVal);
+
+    // status
+    res.statusCode = view === '_error' ? 404 : 200;
+    // Send response
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Accept-Ranges', 'none');
+    res.setHeader('Content-Length', Buffer.byteLength(html));
+
+    res.end(html, 'utf8');
+
+    next(e);
+  } catch (e) {
+    console.log('e', e)
+    next(e);
   }
-
-  // status
-  res.statusCode = view === '_error' ? 404 : 200;
-  // Send response
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.setHeader('Accept-Ranges', 'none');
-  res.setHeader('Content-Length', Buffer.byteLength(html));
-
-  res.end(html, 'utf8');
-
-  next();
 }

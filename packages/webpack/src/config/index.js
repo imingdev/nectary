@@ -1,7 +1,7 @@
 import WebpackClientConfig from './client';
 import WebpackServerConfig from './server';
 
-export default options => ({
-  client: (new WebpackClientConfig(options)).config(),
-  server: (new WebpackServerConfig(options)).config()
+export default nectary => ({
+  client: (new WebpackClientConfig(nectary)).config(),
+  server: (new WebpackServerConfig(nectary)).config()
 })

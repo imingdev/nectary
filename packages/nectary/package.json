@@ -1,11 +1,11 @@
 {
   "name": "nectary",
-  "version": "1.0.9",
+  "version": "1.0.9-bate",
   "author": "mingdev <mingdev@163.com>",
   "main": "dist/index.js",
   "dependencies": {
-    "@nectary/server": "^1.0.2",
-    "@nectary/webpack": "^1.0.5",
+    "@nectary/server": "^1.0.2-bate",
+    "@nectary/webpack": "^1.0.5-bate",
     "consola": "^2.15.0",
     "hable": "^3.0.0",
     "lodash": "^4.17.20"

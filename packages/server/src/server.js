@@ -1,8 +1,6 @@
-import path from 'path';
 import serveStatic from 'serve-static';
 import connect from 'connect';
-import nectaryMiddleware from './middleware/nectary';
-import Renderer from './renderer';
+import Router from './lib/Router';
 
 export default class Server {
   constructor(nectary) {
@@ -12,8 +10,14 @@ export default class Server {
     this.app = app;
     this.render = app;
 
-    // Runtime shared resources
-    this.resources = {};
+    this.router = new Router(nectary);
+
+    // devMiddleware placeholder
+    if (nectary.options.dev) {
+      nectary.hook('server:devMiddleware', (devMiddleware) => {
+        this.devMiddleware = devMiddleware;
+      })
+    }
 
     this.setupMiddleware = this.setupMiddleware.bind(this);
     this.useMiddleware = this.useMiddleware.bind(this);
@@ -24,36 +28,23 @@ export default class Server {
     if (this._readyCalled) return this;
     this._readyCalled = true;
 
-    const {nectary, options, useMiddleware, loadResources, setupMiddleware} = this;
-    const {dev} = options;
-
-    if (dev) {
-      // devMiddleware placeholder
-      nectary.hook('server:devMiddleware', useMiddleware);
-    }
+    const {nectary, loadResources, setupMiddleware} = this;
 
     // load resources
     nectary.hook('server:resources', _fs => {
-      this.resources = loadResources(_fs);
+      this.router.set(loadResources(_fs));
     });
 
-    // build compiled
-    nectary.hook('server:compiled', async ({name}) => {
-      const _compiled = this._compiled || {};
-      _compiled[name] = true;
-      this._compiled = _compiled;
-      const {client, server} = this._compiled;
-
-      // Setup nuxt middleware
-      if (client && server) await setupMiddleware();
-    });
+    // Setup nuxt middleware
+    await setupMiddleware();
 
     return this;
   }
 
   setupMiddleware() {
-    const {options, useMiddleware} = this;
-    const {dev, server, rootDir, buildDir, build} = options;
+    const {nectary, options, router, useMiddleware} = this;
+    const {dev, server, dir, build} = options;
+    const {root, build: buildDir} = dir;
     const {compressor} = server || {};
 
     if (!dev) {
@@ -68,25 +59,31 @@ export default class Server {
       }
 
       // static
-      const staticMiddleware = serveStatic(path.join(rootDir, buildDir, build.dir.static));
+      const staticMiddleware = serveStatic(nectary.resolve.build(options.build.dir.static));
       useMiddleware({route: `/${build.dir.static}`, handle: staticMiddleware})
     }
 
-    // Finally use nectaryMiddleware
-    const renderer = new Renderer(this);
-    useMiddleware(nectaryMiddleware({
-      serverContext: this,
-      render: renderer.render
-    }));
+    // Dev middleware
+    if (dev) {
+      useMiddleware((req, res, next) => {
+        const {devMiddleware} = this;
+        if (!devMiddleware) return next();
+
+        devMiddleware(req, res, next);
+      });
+    }
+
+    // Finally use router middleware
+    useMiddleware(router.middleware);
   }
 
   loadResources(_fs) {
-    const {options} = this;
+    const {nectary, options} = this;
 
     let result = {};
 
     try {
-      const fullPath = path.join(options.rootDir, options.buildDir, options.build.manifest);
+      const fullPath = nectary.resolve.build(options.build.manifest);
 
       if (!_fs.existsSync(fullPath)) return result;
 
@@ -102,10 +99,7 @@ export default class Server {
   useMiddleware(middleware) {
     const {app} = this;
 
-    if (typeof middleware === 'object') {
-      if (middleware.handle && !middleware.route) return app.use(middleware.handle);
-      return app.use(middleware.route, middleware.handle);
-    }
+    if (typeof middleware === 'object') return app.use(middleware.route = '/', middleware.handle);
     return app.use(middleware);
   }
 }

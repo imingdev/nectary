@@ -5,6 +5,14 @@ export default {
   env: {},
   build: {
     manifest: 'manifest.json',
+    dir: {
+      server: 'views',
+      static: 'static'
+    },
+    alias: {},
+    watch: {
+      aggregateTimeout: 1000
+    },
     publicPath: '/',
     extend(config, {isDev, isClient, isServer}) {
       return config;
@@ -14,10 +22,6 @@ export default {
       babelrc: false,
       compact: false,
       cacheDirectory: undefined
-    },
-    dir: {
-      server: 'views',
-      static: 'static'
     },
     filenames: {
       // { isDev, isClient, isServer }
@@ -30,6 +34,8 @@ export default {
     }
   },
   server: {
+    port: process.env.PORT || 9001,
+    host: process.env.HOST || 'localhost',
     compressor: {
       threshold: 0
     },
@@ -37,12 +43,12 @@ export default {
       weak: false
     }
   },
-  eslint: true,
-  alias: {},
-  buildDir: 'dist',
-  rootDir: process.cwd(),
-  srcDir: 'src',
-  pageDir: 'pages',
+  dir: {
+    root: process.cwd(),
+    src: 'src',
+    page: 'pages',
+    build: 'dist',
+  },
   pattern: '**/index.{js,jsx}',
   globals: {
     id: 'app-main',

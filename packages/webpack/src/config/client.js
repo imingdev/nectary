@@ -16,13 +16,13 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
   }
 
   entry() {
-    const {options, dev, loadPagePath, loadDefaultPages} = this;
-    const {pattern, globals} = options;
+    const {options, dev, loadDefaultPages} = this;
+    const {pattern, globals, dir} = options;
 
     const appPath = loadDefaultPages._app;
 
     return WebpackDynamicEntryPlugin.getEntry({
-      pattern: loadPagePath(pattern),
+      pattern: path.join(dir.root, dir.src, dir.page, pattern),
       generate: (entry) => {
         if (!entry['_error']) entry['_error'] = loadDefaultPages._error;
 
@@ -95,7 +95,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
           vendor: {
             name: 'vendor',
             chunks: 'initial',
-            test: ({resource}) => resource && /\.js$/.test(resource) && path.join(options.rootDir, 'node_modules') === 0
+            test: ({resource}) => resource && /\.js$/.test(resource) && path.join(options.dir.root, 'node_modules') === 0
           },
           async: {
             name: 'async',

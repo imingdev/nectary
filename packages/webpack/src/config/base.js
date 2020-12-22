@@ -7,10 +7,15 @@ import {styleLoaders, assetsLoaders} from '../utils/loaders';
 import {checkFileExists} from "../utils/checkFile";
 
 export default class WebpackBaseConfig {
-  constructor(options) {
-    this.options = options;
+  constructor(nectary) {
+    this.nectary = nectary;
+    this.options = nectary.options;
 
     this.loadPagePath = this.loadPagePath.bind(this);
+  }
+
+  loadPagePath(p) {
+    return this.nectary.resolve.page(p);
   }
 
   get assetsPath() {
@@ -40,14 +45,8 @@ export default class WebpackBaseConfig {
     }
   }
 
-  loadPagePath(p) {
-    const {rootDir = process.cwd(), srcDir, pageDir} = this.options;
-    return path.join(rootDir, srcDir, pageDir, p);
-  }
-
   get loadDefaultPages() {
-    const {loadPagePath} = this;
-
+    const loadPagePath = p => this.nectary.resolve.page(p);
     const load = name => checkFileExists(loadPagePath(name)) || require.resolve(`../client/pages/${name}`);
 
     return {
@@ -92,10 +91,10 @@ export default class WebpackBaseConfig {
   }
 
   output() {
-    const {options} = this;
-    const {rootDir, buildDir, build} = options;
+    const {nectary, options} = this;
+    const {build} = options;
     return {
-      path: path.join(rootDir, buildDir),
+      path: nectary.resolve.build(),
       publicPath: build.publicPath
     }
   }
@@ -148,14 +147,14 @@ export default class WebpackBaseConfig {
   }
 
   get rules() {
-    const {env, options, assetsPath} = this;
+    const {env, nectary, assetsPath} = this;
     const rules = [{
       test: /\.(js|jsx)$/,
       loader: 'babel-loader',
       include: [
         path.join(__dirname, '..', 'client'),
         path.join(__dirname, '..', 'loaders'),
-        path.join(options.rootDir, options.srcDir)
+        nectary.resolve.src()
       ],
       options: this.getBabelOptions()
     }]
@@ -165,15 +164,6 @@ export default class WebpackBaseConfig {
         extract: env.isClient,
       }))
       .concat(assetsLoaders({emitFile: env.isClient, assetsPath}));
-
-    if (options.eslint) rules.unshift({
-      test: /\.(js|jsx)$/,
-      loader: 'eslint-loader',
-      enforce: 'pre',
-      options: {
-        formatter: require('eslint-friendly-formatter')
-      }
-    });
 
     return rules;
   }
@@ -209,7 +199,7 @@ export default class WebpackBaseConfig {
       },
       resolve: {
         extensions: ['.js', '.jsx', '.json'],
-        alias: this.options.alias || {}
+        alias: this.options.build.alias || {}
       },
       plugins: this.plugins(),
       performance: {

@@ -9,8 +9,6 @@ export default class Renderer {
     this.options = nectary.options;
 
     this.render = this.render.bind(this);
-    this.loadServerViewPath = this.loadServerViewPath.bind(this);
-    this.requireServerViewPath = this.requireServerViewPath.bind(this);
     this.requireReactElement = this.requireReactElement.bind(this);
     this.createReactElement = this.createReactElement.bind(this);
     this.renderReactToString = this.renderReactToString.bind(this);
@@ -18,10 +16,11 @@ export default class Renderer {
   }
 
   async render({view, scripts, styles, req, res}) {
-    const {options, requireServerViewPath, renderReactToString, renderReactToStaticMarkup} = this;
-    const {Component: Document} = requireServerViewPath('_document');
-    const {Component: App, getServerSideProps: getAppServerSideProps} = requireServerViewPath('_app');
-    const {Component, getServerSideProps} = requireServerViewPath(view);
+    const {options, requireReactElement, renderReactToString, renderReactToStaticMarkup} = this;
+
+    const {Component: Document} = requireReactElement('_document');
+    const {Component: App, getServerSideProps: getAppServerSideProps} = requireReactElement('_app');
+    const {Component, getServerSideProps} = requireReactElement(view);
 
     let state;
     if (getAppServerSideProps && typeof getAppServerSideProps === 'function') {
@@ -41,7 +40,7 @@ export default class Renderer {
       pageProps: state,
       Component
     });
-
+    console.log('body', body)
     // helmet
     const helmet = Helmet.renderStatic();
 
@@ -56,23 +55,14 @@ export default class Renderer {
       id: options.globals.id
     });
 
+    console.log('content', content)
+
     return `<!doctype html>${content}`
   }
 
-  loadServerViewPath(p) {
-    const {rootDir = process.cwd(), buildDir, build} = this.options;
-    return path.join(rootDir, buildDir, build.dir.server, `${p}.js`);
-  }
+  requireReactElement(viewName) {
+    const {default: Component, getServerSideProps} = this.nectary.require.buildServer(`${viewName}.js`);
 
-  requireServerViewPath(p) {
-    return this.requireReactElement(this.loadServerViewPath(p));
-  }
-
-  requireReactElement(filePath) {
-    const {dev} = this.options;
-    if (dev) delete require.cache[filePath];
-
-    const {default: Component, getServerSideProps} = require(filePath);
     return {
       Component,
       getServerSideProps

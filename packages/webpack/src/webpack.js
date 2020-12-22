@@ -1,4 +1,3 @@
-import path from 'path';
 import pify from 'pify';
 import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
@@ -11,10 +10,10 @@ export default class WebpackBundle {
   constructor(nectary) {
     this.nectary = nectary;
     this.options = nectary.options;
-    this.webpackConfig = getWebpackConfig(nectary.options);
+    this.webpackConfig = getWebpackConfig(nectary);
 
     // Initialize shared MFS for dev
-    if (this.options.dev) this.mfs = new MFS();
+    if (nectary.options.dev) this.mfs = new MFS();
 
     this.webpackCompile = this.webpackCompile.bind(this);
     this.devMiddleware = this.devMiddleware.bind(this);
@@ -28,7 +27,6 @@ export default class WebpackBundle {
 
   async webpackCompile(compiler) {
     const {options, nectary, mfs} = this;
-    const {rootDir, srcDir} = options;
     const {name} = compiler.options;
 
     // Load renderer resources after build
@@ -40,8 +38,8 @@ export default class WebpackBundle {
       });
 
       // Reload renderer
-      if (name === 'client') await nectary.callHook('server:resources', options.dev ? mfs : fs);
-    })
+      await nectary.callHook('server:resources', options.dev ? mfs : fs);
+    });
 
     if (options.dev) {
       // Client Build, watch is started by dev-middleware
@@ -57,7 +55,7 @@ export default class WebpackBundle {
 
       // Server, build and watch for changes
       if (name === 'server') return new Promise((resolve, reject) => {
-        compiler.watch(path.join(rootDir, srcDir), (err) => {
+        compiler.watch(options.build.watch, (err) => {
           if (err) return reject(err);
 
           resolve();
@@ -95,7 +93,7 @@ export default class WebpackBundle {
     );
 
     // Register devMiddleware
-    await this.nectary.callHook('server:devMiddleware', devMiddleware.bind(this));
+    await this.nectary.callHook('server:devMiddleware', devMiddleware);
   }
 
   // dev middle

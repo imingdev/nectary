@@ -1,3 +1,4 @@
+import path from 'path';
 import WebpackNodeExternals from 'webpack-node-externals';
 import WebpackDynamicEntryPlugin from 'webpack-dynamic-entry-plugin';
 import WebpackBaseConfig from './base';
@@ -11,11 +12,11 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
   }
 
   entry() {
-    const {options, loadPagePath, loadDefaultPages} = this;
-    const {pattern, build} = options;
+    const {options, loadDefaultPages} = this;
+    const {pattern, build, dir} = options;
 
     return WebpackDynamicEntryPlugin.getEntry({
-      pattern: loadPagePath(pattern),
+      pattern: path.join(dir.root, dir.src, dir.page, pattern),
       generate: (entry) => {
         if (!entry['_document']) entry['_document'] = loadDefaultPages._document;
         if (!entry['_app']) entry['_app'] = loadDefaultPages._app;
