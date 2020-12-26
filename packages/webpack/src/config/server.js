@@ -15,7 +15,10 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
     const {build} = options;
 
     return WebpackDynamicEntryPlugin.getEntry({
-      pattern: nectary.resolve.globPageDir,
+      pattern: [
+        nectary.resolve.globPageDir,
+        nectary.resolve.page('/{_document,_app,_error}.{js,jsx}')
+      ],
       generate: (entry) => {
         if (!entry['_document']) entry['_document'] = loadDefaultPages._document;
         if (!entry['_app']) entry['_app'] = loadDefaultPages._app;
