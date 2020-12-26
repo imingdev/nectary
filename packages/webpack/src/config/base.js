@@ -5,6 +5,8 @@ import cloneDeep from 'lodash/cloneDeep';
 import WebpackBarPlugin from 'webpackbar';
 import {assetsLoaders, styleLoaders} from '../utils/loaders';
 
+const resolve = _p => path.join(__dirname, '..', _p);
+
 export default class WebpackBaseConfig {
   constructor(nectary) {
     this.nectary = nectary;
@@ -140,12 +142,13 @@ export default class WebpackBaseConfig {
 
   get rules() {
     const {env, nectary, assetsPath} = this;
+
     const rules = [{
       test: /\.(js|jsx)$/,
       loader: 'babel-loader',
       include: [
-        path.join(__dirname, '..', 'client'),
-        path.join(__dirname, '..', 'loaders'),
+        resolve('client'),
+        resolve('loaders'),
         nectary.resolve.srcDir
       ],
       options: this.getBabelOptions()
