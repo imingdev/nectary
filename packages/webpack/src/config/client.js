@@ -1,4 +1,3 @@
-import path from 'path';
 import webpack from 'webpack';
 import WebpackDynamicEntryPlugin from 'webpack-dynamic-entry-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
@@ -8,21 +7,21 @@ import ClientManifestPlugin from '../plugins/client-manifest-plugin';
 import WebpackBaseConfig from './base';
 
 export default class WebpackClientConfig extends WebpackBaseConfig {
-  constructor(options) {
-    super(options);
+  constructor(nectary) {
+    super(nectary);
     this.name = 'client';
     this.isServer = false;
     this.isClient = true;
   }
 
   entry() {
-    const {options, dev, loadDefaultPages} = this;
-    const {pattern, globals, dir} = options;
+    const {nectary, options, dev, loadDefaultPages} = this;
+    const {globals} = options;
 
     const appPath = loadDefaultPages._app;
 
     return WebpackDynamicEntryPlugin.getEntry({
-      pattern: path.join(dir.root, dir.src, dir.page, pattern),
+      pattern: nectary.resolve.globPageDir,
       generate: (entry) => {
         if (!entry['_error']) entry['_error'] = loadDefaultPages._error;
 
@@ -65,7 +64,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
   }
 
   plugins() {
-    const {dev, options, assetsPath} = this;
+    const {nectary, dev, options, assetsPath} = this;
     const {publicPath, manifest} = options.build;
 
     const plugins = super.plugins();
@@ -76,7 +75,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
       }),
       new ClientManifestPlugin({
         publicPath,
-        fileName: manifest
+        fileName: nectary.resolve.buildManifest
       })
     );
 
@@ -86,7 +85,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
   }
 
   optimization() {
-    const {dev, options} = this;
+    const {nectary, dev} = this;
     if (dev) return {};
 
     return {
@@ -95,7 +94,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
           vendor: {
             name: 'vendor',
             chunks: 'initial',
-            test: ({resource}) => resource && /\.js$/.test(resource) && path.join(options.dir.root, 'node_modules') === 0
+            test: ({resource}) => resource && /\.js$/.test(resource) && nectary.resolve.root('node_modules') === 0
           },
           async: {
             name: 'async',

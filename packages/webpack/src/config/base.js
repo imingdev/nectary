@@ -3,26 +3,19 @@ import WebpackDynamicEntryPlugin from 'webpack-dynamic-entry-plugin';
 import webpack from 'webpack';
 import cloneDeep from 'lodash/cloneDeep';
 import WebpackBarPlugin from 'webpackbar';
-import {styleLoaders, assetsLoaders} from '../utils/loaders';
-import {checkFileExists} from "../utils/checkFile";
+import {assetsLoaders, styleLoaders} from '../utils/loaders';
 
 export default class WebpackBaseConfig {
   constructor(nectary) {
     this.nectary = nectary;
     this.options = nectary.options;
-
-    this.loadPagePath = this.loadPagePath.bind(this);
-  }
-
-  loadPagePath(p) {
-    return this.nectary.resolve.page(p);
   }
 
   get assetsPath() {
     const {env, options: {dev, build: {dir, filenames}}} = this;
     const {app, chunk, css, img, font, video} = filenames || {};
 
-    const resolvePath = _path => path.posix.join(dir.static, _path);
+    const resolvePath = _path => path.posix.join(dev ? dir.static : '.', _path);
 
     const loadFileNamePath = name => {
       let fileName;
@@ -46,8 +39,7 @@ export default class WebpackBaseConfig {
   }
 
   get loadDefaultPages() {
-    const loadPagePath = p => this.nectary.resolve.page(p);
-    const load = name => checkFileExists(loadPagePath(name)) || require.resolve(`../client/pages/${name}`);
+    const load = name => require.resolve(`../client/pages/${name}`);
 
     return {
       '_document': load('_document'),
@@ -94,7 +86,7 @@ export default class WebpackBaseConfig {
     const {nectary, options} = this;
     const {build} = options;
     return {
-      path: nectary.resolve.build(),
+      path: nectary.resolve.buildDir,
       publicPath: build.publicPath
     }
   }
@@ -154,14 +146,13 @@ export default class WebpackBaseConfig {
       include: [
         path.join(__dirname, '..', 'client'),
         path.join(__dirname, '..', 'loaders'),
-        nectary.resolve.src()
+        nectary.resolve.srcDir
       ],
       options: this.getBabelOptions()
     }]
       .concat(styleLoaders({
         sourceMap: env.isDev,
-        useIgnore: env.isServer,
-        extract: env.isClient,
+        extract: env.isClient
       }))
       .concat(assetsLoaders({emitFile: env.isClient, assetsPath}));
 

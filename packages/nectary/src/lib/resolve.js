@@ -10,12 +10,21 @@ export default class Resolve {
     this.page = this.page.bind(this);
     this.build = this.build.bind(this);
     this.buildServer = this.buildServer.bind(this);
+
+    this.srcDir = this.root(nectary.options.dir.src);
+    this.pageDir = this.src(nectary.options.dir.page);
+    this.globPageDir = this.src(nectary.options.dir.page, nectary.options.pattern);
+
+    this.buildDir = this.root(nectary.options.dir.build);
+    this.buildManifest = this.build(nectary.options.build.dir.manifest);
+    this.buildStaticDir = this.build(nectary.options.build.dir.static);
+    this.buildServerDir = this.build(nectary.options.build.dir.server);
   }
 
-  root(_p) {
-    const _paths = Array.isArray(_p) ? _p : [_p];
-    const args = [this.options.dir.root].concat(_paths).filter(Boolean);
-    return path.join.apply(path, args);
+  root(..._p) {
+    const {options} = this;
+
+    return path.join.apply(path, [options.dir.root].concat(_p));
   }
 
   src(p) {

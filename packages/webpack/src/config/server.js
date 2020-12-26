@@ -1,4 +1,3 @@
-import path from 'path';
 import WebpackNodeExternals from 'webpack-node-externals';
 import WebpackDynamicEntryPlugin from 'webpack-dynamic-entry-plugin';
 import WebpackBaseConfig from './base';
@@ -12,11 +11,11 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
   }
 
   entry() {
-    const {options, loadDefaultPages} = this;
-    const {pattern, build, dir} = options;
+    const {nectary, options, loadDefaultPages} = this;
+    const {build} = options;
 
     return WebpackDynamicEntryPlugin.getEntry({
-      pattern: path.join(dir.root, dir.src, dir.page, pattern),
+      pattern: nectary.resolve.globPageDir,
       generate: (entry) => {
         if (!entry['_document']) entry['_document'] = loadDefaultPages._document;
         if (!entry['_app']) entry['_app'] = loadDefaultPages._app;

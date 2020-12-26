@@ -4,16 +4,16 @@ export default {
   dev: NODE_ENV === 'development',
   env: {},
   build: {
-    manifest: 'manifest.json',
+    publicPath: '/',
     dir: {
-      server: 'views',
+      manifest: 'manifest.json',
+      server: 'server/views',
       static: 'static'
     },
     alias: {},
     watch: {
       aggregateTimeout: 1000
     },
-    publicPath: '/',
     extend(config, {isDev, isClient, isServer}) {
       return config;
     },
@@ -34,8 +34,8 @@ export default {
     }
   },
   server: {
-    port: process.env.PORT || 9001,
-    host: process.env.HOST || 'localhost',
+    port: process.env.PORT || process.env.npm_config_port || 9001,
+    host: process.env.HOST || process.env.npm_config_host || 'localhost',
     compressor: {
       threshold: 0
     },

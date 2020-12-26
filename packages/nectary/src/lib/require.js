@@ -14,7 +14,7 @@ export default class Require {
     const {nectary, options} = this;
     const {resolve} = nectary;
 
-    const filePath = resolve.root(p);
+    const filePath = resolve.root.apply(resolve, p);
     if (options.dev) delete require.cache[filePath];
 
     return require(filePath);

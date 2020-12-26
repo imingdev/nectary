@@ -6,9 +6,7 @@ export default class Server {
   constructor(nectary) {
     this.nectary = nectary;
     this.options = nectary.options;
-    const app = connect();
-    this.app = app;
-    this.render = app;
+    this.app = connect();
 
     this.router = new Router(nectary);
 
@@ -43,8 +41,7 @@ export default class Server {
 
   setupMiddleware() {
     const {nectary, options, router, useMiddleware} = this;
-    const {dev, server, dir, build} = options;
-    const {root, build: buildDir} = dir;
+    const {dev, server, build} = options;
     const {compressor} = server || {};
 
     if (!dev) {
@@ -59,7 +56,7 @@ export default class Server {
       }
 
       // static
-      const staticMiddleware = serveStatic(nectary.resolve.build(options.build.dir.static));
+      const staticMiddleware = serveStatic(nectary.resolve.buildStaticDir);
       useMiddleware({route: `/${build.dir.static}`, handle: staticMiddleware})
     }
 
@@ -83,7 +80,7 @@ export default class Server {
     let result = {};
 
     try {
-      const fullPath = nectary.resolve.build(options.build.manifest);
+      const fullPath = nectary.resolve.build(nectary.resolve.buildManifest);
 
       if (!_fs.existsSync(fullPath)) return result;
 

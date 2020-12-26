@@ -38,7 +38,6 @@ export default class Nectary extends Hookable {
     if (this.server) return;
 
     this.server = new Server(this);
-    this.renderer = this.server;
     this.render = this.server.app;
   }
 };

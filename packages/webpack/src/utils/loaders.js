@@ -55,7 +55,7 @@ export const styleLoaders = (options = {}) => {
     const loader = loaders[extension];
     output.push({
       test: new RegExp(`\\.${extension}$`),
-      use: options.useIgnore ? [resolve('loaders/ignore-loader.js')] : loader
+      use: loader
     });
   }
 
